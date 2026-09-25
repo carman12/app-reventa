@@ -35,3 +35,7 @@ Estructura:
 - `lib/logica/cobranza.dart` — reglas de cuotas y morosidad (sin Flutter, probadas en `test/`).
 - `lib/datos/` — estado de la app y guardado.
 - `lib/pantallas/` — pantallas.
+
+## Descargar el APK
+
+Cada cambio compila un APK en GitHub: pestaña **Actions** → última ejecución de "Pruebas y APK" → sección **Artifacts** → `mi-negocio-apk`. Se descarga un .zip con el APK adentro para instalar en el celular (hay que permitir "instalar apps de origen desconocido").
