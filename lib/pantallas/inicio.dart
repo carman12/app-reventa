@@ -1,0 +1,40 @@
+import 'package:flutter/material.dart';
+
+import 'clientes.dart';
+import 'morosos.dart';
+import 'resumen.dart';
+
+class Inicio extends StatefulWidget {
+  const Inicio({super.key});
+
+  @override
+  State<Inicio> createState() => _InicioState();
+}
+
+class _InicioState extends State<Inicio> {
+  int _pestana = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(
+        index: _pestana,
+        children: [
+          Resumen(irA: (i) => setState(() => _pestana = i)),
+          const Clientes(),
+          const Morosos(),
+        ],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _pestana,
+        onDestinationSelected: (i) => setState(() => _pestana = i),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Inicio'),
+          NavigationDestination(icon: Icon(Icons.people_outline), label: 'Clientes'),
+          NavigationDestination(
+              icon: Icon(Icons.warning_amber_outlined), label: 'Morosos'),
+        ],
+      ),
+    );
+  }
+}
