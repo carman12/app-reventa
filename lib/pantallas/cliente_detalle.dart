@@ -9,6 +9,7 @@ import '../widgets/estado.dart';
 import 'abono_dialogo.dart';
 import 'cliente_form.dart';
 import 'venta_form.dart';
+import 'visor_fotos.dart';
 
 class ClienteDetalle extends StatelessWidget {
   final String clienteId;
@@ -139,8 +140,20 @@ class _TarjetaVenta extends StatelessWidget {
     final negocio = context.read<Negocio>();
     final v = r.venta;
     final abonos = negocio.abonosDeVenta(v.id);
+    final fotos = [
+      for (final it in v.items)
+        if (negocio.producto(it.productoId)?.fotos.firstOrNull case final f?) (it, f)
+    ];
     return Card(
       child: ExpansionTile(
+        leading: fotos.isEmpty
+            ? null
+            : GestureDetector(
+                onTap: () => VisorFotos.abrir(context,
+                    fotos: [for (final (_, f) in fotos) f],
+                    titulo: v.descripcion.isEmpty ? 'Compra' : v.descripcion),
+                child: MiniaturaFoto(fotos.first.$2),
+              ),
         title: Text(v.descripcion.isEmpty ? 'Compra' : v.descripcion),
         subtitle: Text('${fecha(v.fecha)} · Total ${pesos(v.total)}'),
         trailing: r.pagada

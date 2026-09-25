@@ -30,6 +30,7 @@ class _InicioState extends State<Inicio> {
         ],
       ),
       bottomNavigationBar: NavigationBar(
+        height: 68,
         selectedIndex: _pestana,
         onDestinationSelected: (i) => setState(() => _pestana = i),
         destinations: const [

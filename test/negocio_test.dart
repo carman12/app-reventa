@@ -124,4 +124,17 @@ void main() {
       expect(n.cuentasPorPagar.single.estado(DateTime(2026, 1, 1)), EstadoCuenta.pagada);
     });
   });
+
+  test('las fotos del producto se guardan y se devuelven al eliminarlo', () async {
+    final almacen = AlmacenMemoria();
+    final n = Negocio(almacen);
+    await n.cargar();
+    final p = await n.guardarProducto(Producto(
+        id: '', seccionId: n.secciones.first.id, nombre: 'Tenis',
+        fotos: const ['a.jpg', 'b.jpg']));
+    final otra = Negocio(almacen);
+    await otra.cargar();
+    expect(otra.productos.single.fotos, ['a.jpg', 'b.jpg']);
+    expect(await otra.eliminarProducto(p.id), ['a.jpg', 'b.jpg']);
+  });
 }

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../datos/fotos.dart';
 import '../datos/negocio.dart';
 import '../formato.dart';
+import '../tema.dart';
 import '../modelos/modelos.dart';
 import 'producto_form.dart';
 import 'secciones.dart';
+import 'vender_producto.dart';
+import 'visor_fotos.dart';
 
 enum FiltroStock { todos, conStock, stockBajo, sinStock }
 
@@ -52,6 +56,7 @@ class _InventarioState extends State<Inventario> {
   FiltroStock _stock = FiltroStock.todos;
   OrdenProducto _orden = OrdenProducto.nombre;
   FiltrosProducto _filtros = FiltrosProducto();
+  bool _catalogo = true;
 
   @override
   Widget build(BuildContext context) {
@@ -133,13 +138,23 @@ class _InventarioState extends State<Inventario> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
             child: TextField(
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                hintText: 'Buscar por nombre, marca, color o talla',
-                border: OutlineInputBorder(),
-                isDense: true,
-              ),
+              decoration: decoracionBusqueda('Buscar por nombre, marca, color o talla'),
               onChanged: (v) => setState(() => _busqueda = v),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+            child: SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<bool>(
+                showSelectedIcon: false,
+                segments: const [
+                  ButtonSegment(value: true, label: Text('Catálogo')),
+                  ButtonSegment(value: false, label: Text('Lista')),
+                ],
+                selected: {_catalogo},
+                onSelectionChanged: (v) => setState(() => _catalogo = v.first),
+              ),
             ),
           ),
           SingleChildScrollView(
@@ -164,7 +179,7 @@ class _InventarioState extends State<Inventario> {
               for (final f in FiltroStock.values)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: FilterChip(
+                  child: ChoiceChip(
                     label: Text(f.texto),
                     selected: _stock == f,
                     onSelected: (_) => setState(() => _stock = f),
@@ -188,11 +203,23 @@ class _InventarioState extends State<Inventario> {
                             ? 'Aún no hay productos.\nToca "Nuevo producto" para agregar el primero.'
                             : 'Ningún producto coincide con el filtro.',
                         textAlign: TextAlign.center))
-                : ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 88),
-                    itemCount: lista.length,
-                    itemBuilder: (_, i) => _FilaProducto(lista[i]),
-                  ),
+                : _catalogo
+                    ? GridView.builder(
+                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 88),
+                        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 220,
+                          mainAxisSpacing: 18,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: 0.62,
+                        ),
+                        itemCount: lista.length,
+                        itemBuilder: (_, i) => _TarjetaCatalogo(lista[i]),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 88),
+                        itemCount: lista.length,
+                        itemBuilder: (_, i) => _FilaProducto(lista[i]),
+                      ),
           ),
         ],
       ),
@@ -229,6 +256,10 @@ class _FilaProducto extends StatelessWidget {
             ? Colors.orange.shade800
             : Colors.green.shade700;
     return ListTile(
+      leading: GestureDetector(
+        onTap: p.fotos.isEmpty ? null : () => verFotos(context, p, detalle),
+        child: MiniaturaFoto(p.fotos.firstOrNull),
+      ),
       title: Text(p.nombre),
       subtitle: Text(detalle),
       trailing: Column(
@@ -241,8 +272,7 @@ class _FilaProducto extends StatelessWidget {
               style: TextStyle(color: colorStock, fontWeight: FontWeight.w600)),
         ],
       ),
-      onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => ProductoForm(producto: p))),
+      onTap: () => editarProducto(context, p),
     );
   }
 }
@@ -342,6 +372,124 @@ class _HojaFiltrosState extends State<_HojaFiltros> {
             ]),
           ],
         ),
+      ),
+    );
+  }
+}
+
+void editarProducto(BuildContext context, Producto p) => Navigator.of(context)
+    .push(MaterialPageRoute(builder: (_) => ProductoForm(producto: p)));
+
+void verFotos(BuildContext context, Producto p, String detalle) => VisorFotos.abrir(
+      context,
+      fotos: p.fotos,
+      titulo: p.nombre,
+      detalle: '${pesos(p.precioVenta)}${detalle.isEmpty ? '' : ' · $detalle'}',
+      alEditar: () => editarProducto(context, p),
+      alVender: () => venderProducto(context, p),
+    );
+
+/// Tarjeta del catálogo: foto de portada grande, nombre, precio y stock.
+/// Tocar la foto abre el carrusel; tocar el texto abre la edición.
+class _TarjetaCatalogo extends StatelessWidget {
+  final Producto p;
+  const _TarjetaCatalogo(this.p);
+
+  @override
+  Widget build(BuildContext context) {
+    final detalle = [
+      p.marca,
+      if (p.talla.isNotEmpty) 'Talla ${p.talla}',
+      p.medida,
+      p.color,
+    ].where((t) => t.isNotEmpty).join(' · ');
+    final colorStock = p.sinStock
+        ? Colors.red.shade700
+        : p.stockBajo
+            ? Colors.orange.shade800
+            : Colors.green.shade700;
+    final esquema = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: () => p.fotos.isEmpty
+          ? editarProducto(context, p)
+          : verFotos(context, p, detalle),
+      onLongPress: () => editarProducto(context, p),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Stack(fit: StackFit.expand, children: [
+                p.fotos.isEmpty
+                    ? ColoredBox(
+                        color: esquema.primaryContainer,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_a_photo_outlined,
+                                color: esquema.onPrimaryContainer),
+                            const SizedBox(height: 4),
+                            Text('Agregar foto',
+                                style: TextStyle(
+                                    color: esquema.onPrimaryContainer, fontSize: 12)),
+                          ],
+                        ),
+                      )
+                    : Image(
+                        image: context.read<AlmacenFotos>().imagen(p.fotos.first),
+                        fit: BoxFit.cover),
+                if (p.fotos.length > 1)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                          color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        const Icon(Icons.photo_library_outlined, size: 12),
+                        const SizedBox(width: 3),
+                        Text('${p.fotos.length}',
+                            style: const TextStyle(
+                                fontSize: 11, fontWeight: FontWeight.w600)),
+                      ]),
+                    ),
+                  ),
+                if (p.sinStock || p.stockBajo)
+                  Positioned(
+                    left: 8,
+                    bottom: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                          color: colorStock, borderRadius: BorderRadius.circular(20)),
+                      child: Text(p.sinStock ? 'Agotado' : 'Quedan ${p.stock}',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+              ]),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(p.nombre,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+          Text(detalle.isEmpty ? '${p.stock} und.' : detalle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: const Color(0xFF7B7479))),
+          Text(pesos(p.precioVenta),
+              style: TextStyle(
+                  color: esquema.primary, fontWeight: FontWeight.w800, fontSize: 15)),
+        ],
       ),
     );
   }

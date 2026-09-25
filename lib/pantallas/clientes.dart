@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../datos/negocio.dart';
 import '../formato.dart';
+import '../tema.dart';
 import '../logica/cobranza.dart';
 import '../modelos/modelos.dart';
 import '../widgets/estado.dart';
@@ -83,12 +84,7 @@ class _ClientesState extends State<Clientes> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
             child: TextField(
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                hintText: 'Buscar por nombre o teléfono',
-                border: OutlineInputBorder(),
-                isDense: true,
-              ),
+              decoration: decoracionBusqueda('Buscar por nombre o teléfono'),
               onChanged: (v) => setState(() => _busqueda = v),
             ),
           ),
@@ -107,7 +103,7 @@ class _ClientesState extends State<Clientes> {
                 ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: FilterChip(
+                child: ChoiceChip(
                   label: const Text('Con saldo'),
                   selected: _soloConSaldo,
                   onSelected: (v) => setState(() => _soloConSaldo = v),

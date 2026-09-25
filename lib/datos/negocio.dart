@@ -257,9 +257,12 @@ class Negocio extends ChangeNotifier {
     return nuevo;
   }
 
-  Future<void> eliminarProducto(String id) async {
+  /// Devuelve las referencias de fotos del producto eliminado, para borrarlas.
+  Future<List<String>> eliminarProducto(String id) async {
+    final fotos = producto(id)?.fotos ?? const <String>[];
     _productos.removeWhere((p) => p.id == id);
     await _guardar();
+    return fotos;
   }
 
   Future<void> ajustarStock(String productoId, int cambio) async {

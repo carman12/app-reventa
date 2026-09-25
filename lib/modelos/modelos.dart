@@ -251,6 +251,9 @@ class Producto {
   final int stock;
   final int stockMinimo;
 
+  /// Referencias a las fotos del producto, en el orden del carrusel.
+  final List<String> fotos;
+
   const Producto({
     required this.id,
     required this.seccionId,
@@ -265,13 +268,14 @@ class Producto {
     this.precioVenta = 0,
     this.stock = 0,
     this.stockMinimo = 1,
+    this.fotos = const [],
   });
 
   bool get sinStock => stock <= 0;
   bool get stockBajo => stock > 0 && stock <= stockMinimo;
   int get ganancia => precioVenta - precioCompra;
 
-  Producto copyWith({String? id, int? stock}) => Producto(
+  Producto copyWith({String? id, int? stock, List<String>? fotos}) => Producto(
         id: id ?? this.id,
         seccionId: seccionId,
         nombre: nombre,
@@ -285,6 +289,7 @@ class Producto {
         precioVenta: precioVenta,
         stock: stock ?? this.stock,
         stockMinimo: stockMinimo,
+        fotos: fotos ?? this.fotos,
       );
 
   Map<String, dynamic> toJson() => {
@@ -301,6 +306,7 @@ class Producto {
         'precioVenta': precioVenta,
         'stock': stock,
         'stockMinimo': stockMinimo,
+        'fotos': fotos,
       };
 
   factory Producto.fromJson(Map<String, dynamic> j) => Producto(
@@ -317,6 +323,7 @@ class Producto {
         precioVenta: j['precioVenta'] ?? 0,
         stock: j['stock'] ?? 0,
         stockMinimo: j['stockMinimo'] ?? 1,
+        fotos: [for (final f in (j['fotos'] as List? ?? const [])) f as String],
       );
 }
 

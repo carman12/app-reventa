@@ -4,12 +4,16 @@ import 'package:provider/provider.dart';
 
 import '../datos/negocio.dart';
 import '../formato.dart';
+import '../tema.dart';
 import '../logica/cobranza.dart';
 import '../modelos/modelos.dart';
 
 class VentaForm extends StatefulWidget {
   final Cliente cliente;
-  const VentaForm({super.key, required this.cliente});
+
+  /// Producto que ya viene elegido (al vender desde el inventario).
+  final ItemVenta? itemInicial;
+  const VentaForm({super.key, required this.cliente, this.itemInicial});
 
   @override
   State<VentaForm> createState() => _VentaFormState();
@@ -25,6 +29,15 @@ class _VentaFormState extends State<VentaForm> {
   late DateTime _fecha = soloFecha(context.read<Negocio>().hoy);
   DateTime? _primerVencimiento;
   final List<ItemVenta> _items = [];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.itemInicial != null) {
+      _items.add(widget.itemInicial!);
+      _recalcular();
+    }
+  }
 
   bool get _enCuotas => widget.cliente.formaPago == FormaPago.cuotas;
   int get _totalValor => leerPesos(_total.text) ?? 0;
@@ -281,11 +294,7 @@ class _SelectorProductoState extends State<_SelectorProducto> {
           padding: const EdgeInsets.all(16),
           child: TextField(
             autofocus: true,
-            decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                hintText: 'Buscar producto con stock',
-                border: OutlineInputBorder(),
-                isDense: true),
+            decoration: decoracionBusqueda('Buscar producto con stock'),
             onChanged: (v) => setState(() => _q = v),
           ),
         ),

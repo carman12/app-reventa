@@ -11,6 +11,8 @@ App Android (Flutter) para llevar clientes, ventas a crédito, cobros y morosos 
 - **Morosos** ordenados por días de atraso, con filtro por rango (1–30, 31–60, más de 60) y recordatorio por WhatsApp.
 - **Inicio** con total por cobrar, total vencido, productos por reponer y cobros de la semana.
 - **Inventario** por secciones que la administradora crea, renombra y ordena (vienen Ropa de cama, Calzado y Belleza). Filtros combinables por sección, stock (con stock, stock bajo, agotados), marca, talla, medida, color, proveedor y rango de precio. Muestra ganancia por unidad.
+- **Fotos y catálogo**: cada producto puede tener varias fotos (cámara o galería). El inventario se ve como catálogo con fotos grandes; al tocar una foto se abre un carrusel con zoom (pellizcar o doble toque).
+- **Cliente y producto**: desde el catálogo o la ficha de un producto se puede "Vender a un cliente". La ficha muestra quién lo ha comprado y el historial del cliente muestra la foto de lo que compró.
 - **Ventas con productos**: al vender se eligen productos del inventario, el total se calcula solo y el stock se descuenta. Eliminar la venta devuelve el stock. También se permiten ventas de contado.
 
 - **Finanzas**: gastos por categoría con total del mes, y cuentas por pagar a proveedores con vencimiento, pagos parciales y estado (pendiente, por vencer, vencida, pagada).
