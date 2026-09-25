@@ -76,5 +76,22 @@ Future<void> main() async {
   await n.guardarCliente(const Cliente(
       id: '', nombre: 'Mónica Ruiz', telefono: '3112223344', sector: 'Centro'));
 
+  await n.registrarGasto(categoria: 'Transporte', monto: 18000,
+      descripcion: 'Envíos a Bello', fecha: hace(2));
+  await n.registrarGasto(categoria: 'Bolsas y empaque', monto: 25000, fecha: hace(6));
+  await n.registrarGasto(categoria: 'Publicidad', monto: 40000,
+      descripcion: 'Pauta en Instagram', fecha: hace(10));
+  await n.registrarGasto(categoria: 'Transporte', monto: 12000, fecha: hace(14));
+  final c1 = await n.registrarCuentaPorPagar(
+      proveedor: 'Textiles Medellín', descripcion: '12 juegos de sábanas',
+      monto: 540000, fecha: hace(25), vencimiento: hoy.add(const Duration(days: 4)));
+  await n.pagarCuenta(c1.id, 200000, fecha: hace(10));
+  await n.registrarCuentaPorPagar(
+      proveedor: 'Calzado El Paso', descripcion: '6 pares de tenis',
+      monto: 660000, fecha: hace(40), vencimiento: hace(3));
+  await n.registrarCuentaPorPagar(
+      proveedor: 'Hogar Textil', descripcion: 'Edredones', monto: 270000,
+      fecha: hace(5), vencimiento: hoy.add(const Duration(days: 25)));
+
   runApp(AppReventa(negocio: n));
 }

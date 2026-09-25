@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'clientes.dart';
+import 'finanzas.dart';
 import 'inventario.dart';
 import 'morosos.dart';
 import 'resumen.dart';
@@ -25,6 +26,7 @@ class _InicioState extends State<Inicio> {
           const Clientes(),
           const Morosos(),
           const Inventario(),
+          const Finanzas(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -37,6 +39,8 @@ class _InicioState extends State<Inicio> {
               icon: Icon(Icons.warning_amber_outlined), label: 'Morosos'),
           NavigationDestination(
               icon: Icon(Icons.inventory_2_outlined), label: 'Inventario'),
+          NavigationDestination(
+              icon: Icon(Icons.account_balance_wallet_outlined), label: 'Finanzas'),
         ],
       ),
     );

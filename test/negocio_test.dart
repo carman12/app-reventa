@@ -93,4 +93,35 @@ void main() {
       expect(otra.productos.single.talla, '38');
     });
   });
+
+  group('finanzas', () {
+    test('gastos y cuentas por pagar se guardan y recargan', () async {
+      final almacen = AlmacenMemoria();
+      final hoy = DateTime(2026, 9, 25);
+      final n = Negocio(almacen, ahora: () => hoy);
+      await n.cargar();
+      await n.registrarGasto(categoria: 'Transporte', monto: 12000);
+      final c = await n.registrarCuentaPorPagar(
+          proveedor: 'Textiles', monto: 300000, vencimiento: DateTime(2026, 10, 1));
+      await n.pagarCuenta(c.id, 100000);
+
+      final otra = Negocio(almacen, ahora: () => hoy);
+      await otra.cargar();
+      expect(otra.gastos.single.monto, 12000);
+      final cuenta = otra.cuentasPorPagar.single;
+      expect(cuenta.saldo, 200000);
+      expect(cuenta.estado(hoy), EstadoCuenta.porVencer);
+      expect(cuenta.estado(DateTime(2026, 10, 2)), EstadoCuenta.vencida);
+      expect(otra.proveedores(), ['Textiles']);
+    });
+
+    test('una cuenta pagada completa queda pagada', () async {
+      final n = Negocio(AlmacenMemoria());
+      await n.cargar();
+      final c = await n.registrarCuentaPorPagar(
+          proveedor: 'Calzado', monto: 50000, vencimiento: DateTime(2020, 1, 1));
+      await n.pagarCuenta(c.id, 50000);
+      expect(n.cuentasPorPagar.single.estado(DateTime(2026, 1, 1)), EstadoCuenta.pagada);
+    });
+  });
 }

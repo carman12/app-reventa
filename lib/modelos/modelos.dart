@@ -350,3 +350,136 @@ class ItemVenta {
         precioUnitario: j['precioUnitario'],
       );
 }
+
+const categoriasGasto = [
+  'Transporte',
+  'Bolsas y empaque',
+  'Publicidad',
+  'Comisiones',
+  'Servicios',
+  'Personales',
+  'Otros',
+];
+
+class Gasto {
+  final String id;
+  final DateTime fecha;
+  final String categoria;
+  final int monto;
+  final String descripcion;
+
+  const Gasto({
+    required this.id,
+    required this.fecha,
+    required this.categoria,
+    required this.monto,
+    this.descripcion = '',
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'fecha': fecha.toIso8601String(),
+        'categoria': categoria,
+        'monto': monto,
+        'descripcion': descripcion,
+      };
+
+  factory Gasto.fromJson(Map<String, dynamic> j) => Gasto(
+        id: j['id'],
+        fecha: DateTime.parse(j['fecha']),
+        categoria: j['categoria'],
+        monto: j['monto'],
+        descripcion: j['descripcion'] ?? '',
+      );
+}
+
+class PagoProveedor {
+  final String id;
+  final DateTime fecha;
+  final int monto;
+
+  const PagoProveedor({required this.id, required this.fecha, required this.monto});
+
+  Map<String, dynamic> toJson() =>
+      {'id': id, 'fecha': fecha.toIso8601String(), 'monto': monto};
+
+  factory PagoProveedor.fromJson(Map<String, dynamic> j) => PagoProveedor(
+      id: j['id'], fecha: DateTime.parse(j['fecha']), monto: j['monto']);
+}
+
+enum EstadoCuenta { pendiente, porVencer, vencida, pagada }
+
+extension EstadoCuentaTexto on EstadoCuenta {
+  String get texto => switch (this) {
+        EstadoCuenta.pendiente => 'Pendiente',
+        EstadoCuenta.porVencer => 'Por vencer',
+        EstadoCuenta.vencida => 'Vencida',
+        EstadoCuenta.pagada => 'Pagada',
+      };
+}
+
+/// Lo que el negocio le debe a un proveedor.
+class CuentaPorPagar {
+  final String id;
+  final String proveedor;
+  final String descripcion;
+  final int monto;
+  final DateTime fecha;
+  final DateTime vencimiento;
+  final List<PagoProveedor> pagos;
+
+  const CuentaPorPagar({
+    required this.id,
+    required this.proveedor,
+    this.descripcion = '',
+    required this.monto,
+    required this.fecha,
+    required this.vencimiento,
+    this.pagos = const [],
+  });
+
+  int get pagado => pagos.fold(0, (s, p) => s + p.monto);
+  int get saldo => monto - pagado;
+
+  EstadoCuenta estado(DateTime hoy) {
+    if (saldo <= 0) return EstadoCuenta.pagada;
+    final dia = DateTime(hoy.year, hoy.month, hoy.day);
+    final vence = DateTime(vencimiento.year, vencimiento.month, vencimiento.day);
+    if (vence.isBefore(dia)) return EstadoCuenta.vencida;
+    if (vence.difference(dia).inDays <= 7) return EstadoCuenta.porVencer;
+    return EstadoCuenta.pendiente;
+  }
+
+  CuentaPorPagar copyWith({String? id, List<PagoProveedor>? pagos}) => CuentaPorPagar(
+        id: id ?? this.id,
+        proveedor: proveedor,
+        descripcion: descripcion,
+        monto: monto,
+        fecha: fecha,
+        vencimiento: vencimiento,
+        pagos: pagos ?? this.pagos,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'proveedor': proveedor,
+        'descripcion': descripcion,
+        'monto': monto,
+        'fecha': fecha.toIso8601String(),
+        'vencimiento': vencimiento.toIso8601String(),
+        'pagos': pagos.map((p) => p.toJson()).toList(),
+      };
+
+  factory CuentaPorPagar.fromJson(Map<String, dynamic> j) => CuentaPorPagar(
+        id: j['id'],
+        proveedor: j['proveedor'],
+        descripcion: j['descripcion'] ?? '',
+        monto: j['monto'],
+        fecha: DateTime.parse(j['fecha']),
+        vencimiento: DateTime.parse(j['vencimiento']),
+        pagos: [
+          for (final p in (j['pagos'] as List? ?? const []))
+            PagoProveedor.fromJson(Map<String, dynamic>.from(p))
+        ],
+      );
+}

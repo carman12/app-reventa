@@ -16,6 +16,8 @@ class Negocio extends ChangeNotifier {
   final List<Abono> _abonos = [];
   final List<Seccion> _secciones = [];
   final List<Producto> _productos = [];
+  final List<Gasto> _gastos = [];
+  final List<CuentaPorPagar> _cuentas = [];
   bool cargado = false;
 
   static const seccionesIniciales = ['Ropa de cama', 'Calzado', 'Belleza'];
@@ -30,6 +32,8 @@ class Negocio extends ChangeNotifier {
   List<Seccion> get secciones =>
       List.unmodifiable([..._secciones]..sort((a, b) => a.orden.compareTo(b.orden)));
   List<Producto> get productos => List.unmodifiable(_productos);
+  List<Gasto> get gastos => List.unmodifiable(_gastos);
+  List<CuentaPorPagar> get cuentasPorPagar => List.unmodifiable(_cuentas);
 
   Future<void> cargar() async {
     final d = await _almacen.leer();
@@ -45,6 +49,11 @@ class Negocio extends ChangeNotifier {
           [for (final j in d['secciones'] ?? []) Seccion.fromJson(Map.from(j))]);
       _productos.addAll(
           [for (final j in d['productos'] ?? []) Producto.fromJson(Map.from(j))]);
+      _gastos.addAll(
+          [for (final j in d['gastos'] ?? []) Gasto.fromJson(Map.from(j))]);
+      _cuentas.addAll([
+        for (final j in d['cuentasPorPagar'] ?? []) CuentaPorPagar.fromJson(Map.from(j))
+      ]);
     }
     if (d == null || d['secciones'] == null) {
       for (var i = 0; i < seccionesIniciales.length; i++) {
@@ -65,6 +74,8 @@ class Negocio extends ChangeNotifier {
       'abonos': [for (final a in _abonos) a.toJson()],
       'secciones': [for (final x in _secciones) x.toJson()],
       'productos': [for (final p in _productos) p.toJson()],
+      'gastos': [for (final g in _gastos) g.toJson()],
+      'cuentasPorPagar': [for (final c in _cuentas) c.toJson()],
     });
   }
 
@@ -255,6 +266,80 @@ class Negocio extends ChangeNotifier {
     _moverStock(productoId, cambio);
     await _guardar();
   }
+
+  // --- Gastos ---
+
+  Future<void> registrarGasto({
+    required String categoria,
+    required int monto,
+    String descripcion = '',
+    DateTime? fecha,
+  }) async {
+    _gastos.add(Gasto(
+        id: _uuid.v4(),
+        fecha: fecha ?? hoy,
+        categoria: categoria,
+        monto: monto,
+        descripcion: descripcion));
+    await _guardar();
+  }
+
+  Future<void> eliminarGasto(String id) async {
+    _gastos.removeWhere((g) => g.id == id);
+    await _guardar();
+  }
+
+  // --- Cuentas por pagar ---
+
+  Future<CuentaPorPagar> registrarCuentaPorPagar({
+    required String proveedor,
+    required int monto,
+    required DateTime vencimiento,
+    String descripcion = '',
+    DateTime? fecha,
+  }) async {
+    final c = CuentaPorPagar(
+        id: _uuid.v4(),
+        proveedor: proveedor,
+        descripcion: descripcion,
+        monto: monto,
+        fecha: fecha ?? hoy,
+        vencimiento: vencimiento);
+    _cuentas.add(c);
+    await _guardar();
+    return c;
+  }
+
+  Future<void> pagarCuenta(String cuentaId, int monto, {DateTime? fecha}) async {
+    final i = _cuentas.indexWhere((c) => c.id == cuentaId);
+    if (i < 0) return;
+    _cuentas[i] = _cuentas[i].copyWith(pagos: [
+      ..._cuentas[i].pagos,
+      PagoProveedor(id: _uuid.v4(), fecha: fecha ?? hoy, monto: monto),
+    ]);
+    await _guardar();
+  }
+
+  Future<void> eliminarPagoCuenta(String cuentaId, String pagoId) async {
+    final i = _cuentas.indexWhere((c) => c.id == cuentaId);
+    if (i < 0) return;
+    _cuentas[i] = _cuentas[i]
+        .copyWith(pagos: _cuentas[i].pagos.where((p) => p.id != pagoId).toList());
+    await _guardar();
+  }
+
+  Future<void> eliminarCuenta(String id) async {
+    _cuentas.removeWhere((c) => c.id == id);
+    await _guardar();
+  }
+
+  /// Nombres de proveedores ya usados (en productos y cuentas), para sugerirlos.
+  List<String> proveedores() => {
+        for (final p in _productos)
+          if (p.proveedor.trim().isNotEmpty) p.proveedor.trim(),
+        for (final c in _cuentas) c.proveedor.trim(),
+      }.toList()
+        ..sort();
 
   void _moverStock(String productoId, int cambio) {
     final i = _productos.indexWhere((p) => p.id == productoId);

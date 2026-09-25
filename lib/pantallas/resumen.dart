@@ -6,6 +6,7 @@ import '../formato.dart';
 import '../logica/cobranza.dart';
 import '../modelos/modelos.dart';
 import 'cliente_detalle.dart';
+import 'exportar_dialogo.dart';
 
 class Resumen extends StatelessWidget {
   final void Function(int pestana) irA;
@@ -28,7 +29,16 @@ class Resumen extends StatelessWidget {
       ..sort((a, b) => a.proximoPago!.compareTo(b.proximoPago!));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mi Negocio')),
+      appBar: AppBar(
+        title: const Text('Mi Negocio'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.table_view),
+            tooltip: 'Exportar a Excel',
+            onPressed: () => mostrarExportar(context),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -60,6 +70,25 @@ class Resumen extends StatelessWidget {
                 subtitle: const Text('Agotados o con stock bajo'),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => irA(3),
+              ),
+            );
+          }),
+          Builder(builder: (_) {
+            final gastosMes = negocio.gastos
+                .where((g) => g.fecha.year == hoy.year && g.fecha.month == hoy.month)
+                .fold<int>(0, (s, g) => s + g.monto);
+            final porPagar = negocio.cuentasPorPagar
+                .where((c) => c.saldo > 0 && diasEntre(hoy, c.vencimiento) <= diasAvisoPorVencer)
+                .fold<int>(0, (s, c) => s + c.saldo);
+            return Card(
+              child: ListTile(
+                leading: const Icon(Icons.account_balance_wallet_outlined),
+                title: Text('Gastos del mes: ${pesos(gastosMes)}'),
+                subtitle: Text(porPagar > 0
+                    ? 'Pagar a proveedores esta semana o vencido: ${pesos(porPagar)}'
+                    : 'Sin pagos a proveedores esta semana'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => irA(4),
               ),
             );
           }),

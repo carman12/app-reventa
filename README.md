@@ -13,13 +13,14 @@ App Android (Flutter) para llevar clientes, ventas a crédito, cobros y morosos 
 - **Inventario** por secciones que la administradora crea, renombra y ordena (vienen Ropa de cama, Calzado y Belleza). Filtros combinables por sección, stock (con stock, stock bajo, agotados), marca, talla, medida, color, proveedor y rango de precio. Muestra ganancia por unidad.
 - **Ventas con productos**: al vender se eligen productos del inventario, el total se calcula solo y el stock se descuenta. Eliminar la venta devuelve el stock. También se permiten ventas de contado.
 
+- **Finanzas**: gastos por categoría con total del mes, y cuentas por pagar a proveedores con vencimiento, pagos parciales y estado (pendiente, por vencer, vencida, pagada).
+- **Exportar a Excel** (Inicio o Finanzas): un .xlsx con hojas de resumen, clientes, morosos, ventas, abonos, gastos, cuentas por pagar e inventario, para este mes, el mes pasado, todo o un rango de fechas. Se comparte por WhatsApp, correo o Drive.
+
 Los datos se guardan en el celular. La sincronización entre los 2 celulares llega en una etapa siguiente.
 
 ## Próximas etapas
 
-1. Gastos y cuentas por pagar a proveedores.
-2. Exportar a Excel.
-3. Sincronización entre 2 celulares y perfiles de usuario.
+1. Sincronización entre 2 celulares y perfiles de usuario.
 
 ## Desarrollo
 
