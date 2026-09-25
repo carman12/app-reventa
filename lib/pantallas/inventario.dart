@@ -170,6 +170,18 @@ class _InventarioState extends State<Inventario> {
                     onSelected: (_) => setState(() => _seccionId = s?.id),
                   ),
                 ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: ActionChip(
+                  avatar: const Icon(Icons.add, size: 18),
+                  label: const Text('Sección'),
+                  tooltip: 'Crear una sección nueva',
+                  onPressed: () async {
+                    final nueva = await editarSeccion(context, negocio, null);
+                    if (nueva != null) setState(() => _seccionId = nueva.id);
+                  },
+                ),
+              ),
             ]),
           ),
           SingleChildScrollView(

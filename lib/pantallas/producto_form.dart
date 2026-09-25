@@ -9,6 +9,7 @@ import '../datos/negocio.dart';
 import '../formato.dart';
 import '../modelos/modelos.dart';
 import 'cliente_detalle.dart' show confirmar;
+import 'secciones.dart' show editarSeccion;
 import 'vender_producto.dart';
 import 'visor_fotos.dart';
 
@@ -121,16 +122,29 @@ class _ProductoFormState extends State<ProductoForm> {
           padding: const EdgeInsets.all(16),
           children: [
             _seccionFotos(context),
-            DropdownButtonFormField<String>(
-              initialValue: _seccionId,
-              decoration: const InputDecoration(labelText: 'Sección *'),
-              items: [
-                for (final s in secciones)
-                  DropdownMenuItem(value: s.id, child: Text(s.nombre)),
-              ],
-              onChanged: (v) => setState(() => _seccionId = v),
-              validator: (v) => v == null ? 'Elige una sección' : null,
-            ),
+            Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  key: ValueKey(_seccionId),
+                  initialValue: _seccionId,
+                  decoration: const InputDecoration(labelText: 'Sección *'),
+                  items: [
+                    for (final s in secciones)
+                      DropdownMenuItem(value: s.id, child: Text(s.nombre)),
+                  ],
+                  onChanged: (v) => setState(() => _seccionId = v),
+                  validator: (v) => v == null ? 'Elige una sección' : null,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline),
+                tooltip: 'Nueva sección',
+                onPressed: () async {
+                  final nueva = await editarSeccion(context, negocio, null);
+                  if (nueva != null) setState(() => _seccionId = nueva.id);
+                },
+              ),
+            ]),
             TextFormField(
               controller: _nombre,
               decoration: const InputDecoration(
