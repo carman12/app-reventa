@@ -9,16 +9,17 @@ App Android (Flutter) para llevar clientes, ventas a crédito, cobros y morosos 
 - **Abonos** parciales (efectivo, Nequi, Daviplata, transferencia); se aplican a la cuota más antigua.
 - **Estado automático** de cada cliente: al día, por vencer (7 días) o moroso desde el primer día de atraso. Con abonos libres, moroso si pasa el plazo de días sin abonar.
 - **Morosos** ordenados por días de atraso, con filtro por rango (1–30, 31–60, más de 60) y recordatorio por WhatsApp.
-- **Inicio** con total por cobrar, total vencido y cobros de la semana.
+- **Inicio** con total por cobrar, total vencido, productos por reponer y cobros de la semana.
+- **Inventario** por secciones que la administradora crea, renombra y ordena (vienen Ropa de cama, Calzado y Belleza). Filtros combinables por sección, stock (con stock, stock bajo, agotados), marca, talla, medida, color, proveedor y rango de precio. Muestra ganancia por unidad.
+- **Ventas con productos**: al vender se eligen productos del inventario, el total se calcula solo y el stock se descuenta. Eliminar la venta devuelve el stock. También se permiten ventas de contado.
 
 Los datos se guardan en el celular. La sincronización entre los 2 celulares llega en una etapa siguiente.
 
 ## Próximas etapas
 
-1. Inventario por secciones configurables, con filtros.
-2. Gastos y cuentas por pagar a proveedores.
-3. Exportar a Excel.
-4. Sincronización entre 2 celulares y perfiles de usuario.
+1. Gastos y cuentas por pagar a proveedores.
+2. Exportar a Excel.
+3. Sincronización entre 2 celulares y perfiles de usuario.
 
 ## Desarrollo
 
@@ -28,6 +29,8 @@ flutter test
 flutter run            # con un celular conectado o un emulador
 flutter build apk      # genera build/app/outputs/flutter-apk/app-release.apk
 ```
+
+Vista previa en el navegador con datos de ejemplo: `flutter run -d chrome -t lib/main_demo.dart`.
 
 Estructura:
 

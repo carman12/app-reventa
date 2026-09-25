@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'clientes.dart';
+import 'inventario.dart';
 import 'morosos.dart';
 import 'resumen.dart';
 
@@ -23,6 +24,7 @@ class _InicioState extends State<Inicio> {
           Resumen(irA: (i) => setState(() => _pestana = i)),
           const Clientes(),
           const Morosos(),
+          const Inventario(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -33,6 +35,8 @@ class _InicioState extends State<Inicio> {
           NavigationDestination(icon: Icon(Icons.people_outline), label: 'Clientes'),
           NavigationDestination(
               icon: Icon(Icons.warning_amber_outlined), label: 'Morosos'),
+          NavigationDestination(
+              icon: Icon(Icons.inventory_2_outlined), label: 'Inventario'),
         ],
       ),
     );

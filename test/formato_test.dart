@@ -6,8 +6,8 @@ void main() {
   setUpAll(() => initializeDateFormatting('es_CO'));
 
   test('pesos colombianos sin decimales', () {
-    expect(pesos(150000), r'$ 150.000');
-    expect(pesos(1250000), r'$ 1.250.000');
+    expect(pesos(150000), '\$\u00a0150.000');
+    expect(pesos(1250000), '\$\u00a01.250.000');
   });
 
   test('lee valores escritos con puntos', () {

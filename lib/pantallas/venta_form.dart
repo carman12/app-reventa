@@ -24,6 +24,7 @@ class _VentaFormState extends State<VentaForm> {
   Frecuencia _frecuencia = Frecuencia.quincenal;
   late DateTime _fecha = soloFecha(context.read<Negocio>().hoy);
   DateTime? _primerVencimiento;
+  final List<ItemVenta> _items = [];
 
   bool get _enCuotas => widget.cliente.formaPago == FormaPago.cuotas;
   int get _totalValor => leerPesos(_total.text) ?? 0;
@@ -51,6 +52,7 @@ class _VentaFormState extends State<VentaForm> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            _productos(context),
             TextFormField(
               controller: _descripcion,
               decoration: const InputDecoration(
@@ -69,11 +71,13 @@ class _VentaFormState extends State<VentaForm> {
             TextFormField(
               controller: _inicial,
               decoration: const InputDecoration(
-                  labelText: 'Cuota inicial (lo que pagó hoy)', prefixText: r'$ '),
+                  labelText: 'Pago inicial (lo que pagó hoy)',
+                  helperText: 'Si pagó todo, la venta queda de contado',
+                  prefixText: r'$ '),
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              validator: (_) => _inicialValor >= _totalValor && _totalValor > 0
-                  ? 'Si pagó todo, no es venta a crédito'
+              validator: (_) => _inicialValor > _totalValor
+                  ? 'No puede ser mayor que el total'
                   : null,
             ),
             TextButton.icon(
@@ -89,7 +93,14 @@ class _VentaFormState extends State<VentaForm> {
               },
             ),
             const SizedBox(height: 8),
-            if (_enCuotas) ...[
+            if (financiado <= 0 && _totalValor > 0)
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Text('Venta de contado: no queda saldo pendiente.'),
+                ),
+              )
+            else if (_enCuotas) ...[
               Text('Cuotas', style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 8),
               SegmentedButton<Frecuencia>(
@@ -155,7 +166,146 @@ class _VentaFormState extends State<VentaForm> {
           frecuencia: _frecuencia,
           primerVencimiento: _enCuotas ? _primera : null,
           fecha: _fecha,
+          items: List.of(_items),
         );
     if (mounted) Navigator.of(context).pop();
+  }
+
+  /// Productos del inventario incluidos en la venta; el total se calcula solo.
+  Widget _productos(BuildContext context) {
+    final negocio = context.watch<Negocio>();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < _items.length; i++)
+          Row(children: [
+            Expanded(
+              child: Text(
+                  '${_items[i].nombre}\n${pesos(_items[i].precioUnitario)} c/u'),
+            ),
+            IconButton(
+              icon: const Icon(Icons.remove_circle_outline),
+              tooltip: 'Quitar uno',
+              onPressed: () => _cambiarCantidad(i, -1),
+            ),
+            Text('${_items[i].cantidad}'),
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline),
+              tooltip: 'Agregar uno',
+              onPressed: (negocio.producto(_items[i].productoId)?.stock ?? 0) >
+                      _items[i].cantidad
+                  ? () => _cambiarCantidad(i, 1)
+                  : null,
+            ),
+          ]),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.inventory_2_outlined),
+          label: Text(_items.isEmpty
+              ? 'Elegir productos del inventario'
+              : 'Agregar otro producto'),
+          onPressed: () => _elegirProducto(negocio),
+        ),
+      ],
+    );
+  }
+
+  void _cambiarCantidad(int i, int d) {
+    setState(() {
+      final it = _items[i];
+      final n = it.cantidad + d;
+      if (n <= 0) {
+        _items.removeAt(i);
+      } else {
+        _items[i] = ItemVenta(
+            productoId: it.productoId,
+            nombre: it.nombre,
+            cantidad: n,
+            precioUnitario: it.precioUnitario);
+      }
+      _recalcular();
+    });
+  }
+
+  void _recalcular() {
+    if (_items.isEmpty) return;
+    _total.text = '${_items.fold<int>(0, (s, it) => s + it.subtotal)}';
+    _descripcion.text = _items
+        .map((it) => it.cantidad > 1 ? '${it.cantidad} × ${it.nombre}' : it.nombre)
+        .join(', ');
+  }
+
+  Future<void> _elegirProducto(Negocio negocio) async {
+    final elegido = await showModalBottomSheet<Producto>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _SelectorProducto(
+          productos: negocio.productos
+              .where((p) => !p.sinStock && !_items.any((it) => it.productoId == p.id))
+              .toList()),
+    );
+    if (elegido == null) return;
+    setState(() {
+      _items.add(ItemVenta(
+          productoId: elegido.id,
+          nombre: elegido.nombre,
+          cantidad: 1,
+          precioUnitario: elegido.precioVenta));
+      _recalcular();
+    });
+  }
+}
+
+class _SelectorProducto extends StatefulWidget {
+  final List<Producto> productos;
+  const _SelectorProducto({required this.productos});
+
+  @override
+  State<_SelectorProducto> createState() => _SelectorProductoState();
+}
+
+class _SelectorProductoState extends State<_SelectorProducto> {
+  String _q = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final lista = widget.productos
+        .where((p) => '${p.nombre} ${p.marca} ${p.color} ${p.talla} ${p.medida}'
+            .toLowerCase()
+            .contains(_q.toLowerCase()))
+        .toList()
+      ..sort((a, b) => a.nombre.compareTo(b.nombre));
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.75,
+      child: Column(children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: TextField(
+            autofocus: true,
+            decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Buscar producto con stock',
+                border: OutlineInputBorder(),
+                isDense: true),
+            onChanged: (v) => setState(() => _q = v),
+          ),
+        ),
+        Expanded(
+          child: lista.isEmpty
+              ? const Center(child: Text('No hay productos con stock'))
+              : ListView(children: [
+                  for (final p in lista)
+                    ListTile(
+                      title: Text(p.nombre),
+                      subtitle: Text([p.marca, p.talla, p.medida, p.color]
+                          .where((t) => t.isNotEmpty)
+                          .join(' · ')),
+                      trailing: Text('${pesos(p.precioVenta)}\n${p.stock} und.',
+                          textAlign: TextAlign.end),
+                      onTap: () => Navigator.pop(context, p),
+                    ),
+                ]),
+        ),
+      ]),
+    );
   }
 }

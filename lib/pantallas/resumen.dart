@@ -47,6 +47,22 @@ class Resumen extends StatelessWidget {
               onTap: () => irA(2),
             ),
           ),
+          Builder(builder: (_) {
+            final bajos = negocio.productos
+                .where((p) => p.sinStock || p.stockBajo)
+                .length;
+            if (bajos == 0) return const SizedBox.shrink();
+            return Card(
+              child: ListTile(
+                leading: Icon(Icons.inventory_2_outlined,
+                    color: Colors.orange.shade800),
+                title: Text('$bajos producto${bajos == 1 ? '' : 's'} por reponer'),
+                subtitle: const Text('Agotados o con stock bajo'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => irA(3),
+              ),
+            );
+          }),
           const SizedBox(height: 16),
           Text('Cobros de los próximos $diasAvisoPorVencer días',
               style: Theme.of(context).textTheme.titleMedium),

@@ -4,8 +4,9 @@ final _pesos = NumberFormat.currency(
     locale: 'es_CO', symbol: r'$', decimalDigits: 0, customPattern: '¤ #,##0');
 final _fecha = DateFormat('d MMM yyyy', 'es_CO');
 
-/// Formato de pesos colombianos: $ 150.000
-String pesos(int valor) => _pesos.format(valor).replaceAll(' ', ' ');
+/// Formato de pesos colombianos: $ 150.000 (el espacio no se parte).
+String pesos(int valor) =>
+    _pesos.format(valor).replaceAll(RegExp(r'\s'), '\u00a0');
 
 String fecha(DateTime d) => _fecha.format(d);
 
