@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'datos/almacen.dart';
 import 'datos/negocio.dart';
 import 'pantallas/inicio.dart';
+import 'tema.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,10 +30,7 @@ class AppReventa extends StatelessWidget {
         locale: const Locale('es', 'CO'),
         supportedLocales: const [Locale('es', 'CO')],
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
-        theme: ThemeData(
-          colorSchemeSeed: const Color(0xFF00796B),
-          useMaterial3: true,
-        ),
+        theme: temaMiNegocio(),
         home: const Inicio(),
       ),
     );

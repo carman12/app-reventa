@@ -43,10 +43,13 @@ class Resumen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           Row(children: [
-            Expanded(child: _Dato('Por cobrar', pesos(porCobrar), null)),
+            Expanded(
+                child: _Dato('Por cobrar', pesos(porCobrar), null,
+                    fondo: Theme.of(context).colorScheme.primaryContainer)),
             const SizedBox(width: 12),
             Expanded(
-                child: _Dato('Vencido', pesos(vencido), Colors.red.shade700)),
+                child: _Dato('Vencido', pesos(vencido), Colors.red.shade700,
+                    fondo: Theme.of(context).colorScheme.tertiaryContainer)),
           ]),
           const SizedBox(height: 12),
           Card(
@@ -120,11 +123,13 @@ class _Dato extends StatelessWidget {
   final String titulo;
   final String valor;
   final Color? color;
-  const _Dato(this.titulo, this.valor, this.color);
+  final Color? fondo;
+  const _Dato(this.titulo, this.valor, this.color, {this.fondo});
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: fondo,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
