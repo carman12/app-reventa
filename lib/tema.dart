@@ -51,9 +51,14 @@ ThemeData temaMiNegocio() {
       backgroundColor: Colors.white,
       selectedColor: tinta,
       showCheckmark: false,
-      labelStyle: WidgetStateTextStyle.resolveWith((s) => s.contains(WidgetState.selected)
-          ? const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)
-          : const TextStyle(color: tinta, fontWeight: FontWeight.w500)),
+      // El color va como WidgetStateColor: el chip lo resuelve según esté
+      // seleccionado. Un WidgetStateTextStyle se perdía al mezclarse con el
+      // estilo base y en el celular dejaba el texto sin color.
+      labelStyle: TextStyle(
+        fontWeight: FontWeight.w600,
+        color: WidgetStateColor.resolveWith(
+            (s) => s.contains(WidgetState.selected) ? Colors.white : tinta),
+      ),
       secondaryLabelStyle:
           const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
       padding: const EdgeInsets.symmetric(horizontal: 6),

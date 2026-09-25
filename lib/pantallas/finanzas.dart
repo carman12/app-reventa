@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../datos/negocio.dart';
@@ -183,7 +182,7 @@ class _GastosState extends State<_Gastos> {
                   controller: monto,
                   autofocus: true,
                   keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: const [FormatoMiles()],
                   decoration:
                       const InputDecoration(labelText: 'Valor', prefixText: r'$ '),
                   onChanged: (_) => setState(() {}),
@@ -397,7 +396,7 @@ class _CuentasPorPagarState extends State<_CuentasPorPagar> {
                 TextField(
                   controller: monto,
                   keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: const [FormatoMiles()],
                   decoration:
                       const InputDecoration(labelText: 'Valor', prefixText: r'$ '),
                   onChanged: (_) => setState(() {}),
@@ -524,7 +523,7 @@ class _DetalleCuenta extends StatelessWidget {
   }
 
   Future<void> _pagar(BuildContext context, Negocio negocio, CuentaPorPagar c) async {
-    final monto = TextEditingController(text: '${c.saldo}');
+    final monto = TextEditingController(text: miles(c.saldo));
     await showDialog(
       context: context,
       builder: (d) => StatefulBuilder(builder: (d, setState) {
@@ -540,7 +539,7 @@ class _DetalleCuenta extends StatelessWidget {
             controller: monto,
             autofocus: true,
             keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            inputFormatters: const [FormatoMiles()],
             decoration: InputDecoration(
                 labelText: 'Valor', prefixText: r'$ ', errorText: error),
             onChanged: (_) => setState(() {}),

@@ -307,8 +307,8 @@ class _HojaFiltrosState extends State<_HojaFiltros> {
     ..proveedor = widget.actual.proveedor
     ..precioMin = widget.actual.precioMin
     ..precioMax = widget.actual.precioMax;
-  late final _min = TextEditingController(text: f.precioMin?.toString() ?? '');
-  late final _max = TextEditingController(text: f.precioMax?.toString() ?? '');
+  late final _min = TextEditingController(text: textoPesos(f.precioMin));
+  late final _max = TextEditingController(text: textoPesos(f.precioMax));
 
   List<String> _valores(String Function(Producto) campo) => {
         for (final p in widget.productos)
@@ -352,6 +352,7 @@ class _HojaFiltrosState extends State<_HojaFiltros> {
                 child: TextField(
                   controller: _min,
                   keyboardType: TextInputType.number,
+                  inputFormatters: const [FormatoMiles()],
                   decoration: const InputDecoration(
                       labelText: 'Precio desde', prefixText: r'$ '),
                 ),
@@ -361,6 +362,7 @@ class _HojaFiltrosState extends State<_HojaFiltros> {
                 child: TextField(
                   controller: _max,
                   keyboardType: TextInputType.number,
+                  inputFormatters: const [FormatoMiles()],
                   decoration: const InputDecoration(
                       labelText: 'Precio hasta', prefixText: r'$ '),
                 ),

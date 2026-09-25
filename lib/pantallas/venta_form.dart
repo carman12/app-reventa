@@ -78,7 +78,7 @@ class _VentaFormState extends State<VentaForm> {
               decoration:
                   const InputDecoration(labelText: 'Valor total *', prefixText: r'$ '),
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: const [FormatoMiles()],
               validator: (_) => _totalValor <= 0 ? 'Escribe el valor' : null,
             ),
             TextFormField(
@@ -88,7 +88,7 @@ class _VentaFormState extends State<VentaForm> {
                   helperText: 'Si pagó todo, la venta queda de contado',
                   prefixText: r'$ '),
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: const [FormatoMiles()],
               validator: (_) => _inicialValor > _totalValor
                   ? 'No puede ser mayor que el total'
                   : null,
@@ -241,7 +241,7 @@ class _VentaFormState extends State<VentaForm> {
 
   void _recalcular() {
     if (_items.isEmpty) return;
-    _total.text = '${_items.fold<int>(0, (s, it) => s + it.subtotal)}';
+    _total.text = miles(_items.fold<int>(0, (s, it) => s + it.subtotal));
     _descripcion.text = _items
         .map((it) => it.cantidad > 1 ? '${it.cantidad} × ${it.nombre}' : it.nombre)
         .join(', ');

@@ -65,7 +65,7 @@ class _ProductoFormState extends State<ProductoForm> {
     super.dispose();
   }
 
-  static String _num(int? v) => v == null || v == 0 ? '' : '$v';
+  static String _num(int? v) => v == null || v == 0 ? '' : miles(v);
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +91,9 @@ class _ProductoFormState extends State<ProductoForm> {
           decoration: InputDecoration(
               labelText: etiqueta, prefixText: dinero ? r'$ ' : null),
           keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          inputFormatters: dinero
+              ? const [FormatoMiles()]
+              : [FilteringTextInputFormatter.digitsOnly],
           validator: validar,
           onChanged: (_) => setState(() {}),
         );

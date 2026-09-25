@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../datos/negocio.dart';
@@ -12,7 +11,7 @@ Future<void> mostrarAbono(BuildContext context, ResumenVenta r) {
   // Sugiere lo que falta de la próxima cuota, o el saldo si es abono libre.
   final siguiente = r.cuotas.where((c) => !c.pagada).firstOrNull;
   final sugerido = siguiente?.pendiente ?? r.saldo;
-  final monto = TextEditingController(text: '$sugerido');
+  final monto = TextEditingController(text: miles(sugerido));
   var medio = mediosDePago.first;
   var dia = context.read<Negocio>().hoy;
 
@@ -37,7 +36,7 @@ Future<void> mostrarAbono(BuildContext context, ResumenVenta r) {
                 controller: monto,
                 autofocus: true,
                 keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                inputFormatters: const [FormatoMiles()],
                 decoration: InputDecoration(
                     labelText: 'Valor', prefixText: r'$ ', errorText: error),
                 onChanged: (_) => setState(() {}),
